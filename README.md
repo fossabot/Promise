@@ -3,7 +3,7 @@
 [![NPM version](http://img.shields.io/npm/v/promise-elixir.svg?style=flat-square)](https://www.npmjs.com/package/promise-elixir)
 [![NPM downloads](http://img.shields.io/npm/dm/promise-elixir.svg?style=flat-square)](https://www.npmjs.com/package/promise-elixir)
 [![Build Status](http://img.shields.io/travis/blackcater/promise-elixir/master.svg?style=flat-square)](https://travis-ci.org/blackcater/promise-elixir)
-[![Coverage Status](https://img.shields.io/coveralls/blackcater/promise-elixir.svg?style=flat-square)](https://coveralls.io/blackcater/promise-elixir)
+[![Test Coverage](https://img.shields.io/codecov/c/github/blackcater/promise-elixir/coverage.svg?branch=master)](https://codecov.io/gh/blackcater/promise-elixir/coverage.svg?branch=master)
 [![Dependency Status](http://img.shields.io/david/blackcater/promise-elixir.svg?style=flat-square)](https://david-dm.org/blackcater/promise-elixir)
 
 > Promise实现, 符合Promise/A+标准
