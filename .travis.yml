@@ -11,4 +11,4 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 addons:
     codecov:
-        repo_token: 588523da-e23c-466d-9e73-bf1f47e80bdd
+        repo_token: 7f03c8d8-8145-463f-b20e-f4e5eccecf6c
