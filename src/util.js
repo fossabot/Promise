@@ -8,18 +8,48 @@
  */
 import Promise from './Promise';
 
-export function isFunc(value) {
-  return (typeof value === 'function' && value);
-}
+/**
+ *
+ * @param type
+ * @returns {function()}
+ */
+function isType(type) {
 
+  let tmp = type;
+
+  return (obj) => {
+    return (Object.prototype.toString.call(obj) === "[object "+tmp+"]") && obj;
+  };
+}
+/**
+ *
+ * @type {function()}
+ */
+export var isFunc = isType("Function");
+
+/**
+ *
+ * @param value
+ * @returns {boolean|Promise}
+ */
 export function isPromise(value) {
   return (value instanceof Promise && value);
 }
 
+/**
+ *
+ * @param value
+ * @returns {*|Promise.then|then}
+ */
 export function isThenable(value) {
   return value && value.then && isFunc(value.then);
 }
 
+/**
+ *
+ * @param fn
+ * @returns {function()}
+ */
 function once(fn) {
   let called = null;
   let result;
@@ -33,6 +63,12 @@ function once(fn) {
   };
 }
 
+/**
+ *
+ * @param promise
+ * @param x
+ * @returns {*|string|Promise.<*>|String|{filePath}|{filePath, configName}}
+ */
 export function resolveX(promise, x) {
   if (x === promise) promise.reject(new Error('TypeError'));
 
@@ -45,7 +81,13 @@ export function resolveX(promise, x) {
   }
 }
 
-function resolvePromise(promise1, promise2) {
+/**
+ *
+ * @param promise1
+ * @param promise2
+ * @returns {*}
+ */
+export function resolvePromise(promise1, promise2) {
   const state = promise2.state;
 
   if (state === 'Pending') {
@@ -61,7 +103,13 @@ function resolvePromise(promise1, promise2) {
   }
 }
 
-function resolveThenable(promise, thenable) {
+/**
+ *
+ * @param promise
+ * @param thenable
+ * @returns {*}
+ */
+export function resolveThenable(promise, thenable) {
   let called = null;
 
   const resolve = once(r => {
@@ -85,6 +133,10 @@ function resolveThenable(promise, thenable) {
   return promise;
 }
 
+/**
+ *
+ * @param promise
+ */
 export function doPromise(promise) {
   const state = promise.state;
   const queue = promise[(state === 'Fulfilled') ? 'resolves' : 'rejects'];
@@ -101,6 +153,19 @@ export function doPromise(promise) {
       }
     } catch (err) {
       promise.next.reject(err);
+    }
+  }
+}
+
+/**
+ *
+ * @param args
+ * @param fn
+ */
+export function each(args, fn) {
+  if (args instanceof Object) {
+    for(let key in args) {
+      fn(args[key], key, args);
     }
   }
 }

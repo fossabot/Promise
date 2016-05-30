@@ -9,7 +9,8 @@
 import chai from 'chai';
 
 import testInit from './PromiseInitSpec';
-import testThenFunction from './PromiseThenSpec';
+import testBasicFunction from './PromiseBasicMethodSpec';
+import testStaticFunction from './PromiseStaticMethodSpec';
 
 
 describe('Promise Elixir', () => {
@@ -20,6 +21,10 @@ describe('Promise Elixir', () => {
   });
 
   describe('should pass then function test', () => {
-    testThenFunction(expect);
+    testBasicFunction(expect);
   });
+
+  describe('should pass static functions test', () => {
+    testStaticFunction(expect);
+  })
 });

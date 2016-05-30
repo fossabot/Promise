@@ -6,7 +6,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE.txt file in the root directory of this source tree.
  */
-import { isFunc, resolveX, doPromise } from './util';
+import { isFunc, isThenable, resolveX, resolveThenable, doPromise, each } from './util';
 
 class Promise {
   constructor(value) {
@@ -153,24 +153,86 @@ class Promise {
    * @param onRejected
    * @return{Promise} return a new promise object
    */
+  catch(onRejected) {
+    return this.then(void 0, onRejected);
+  }
 }
 
-Promise.resolve = () => {
+/**
+ * return a promise, it's state is Fulfilled
+ * @param arg
+ * @returns {*}
+ */
+Promise.resolve = (arg) => {
+  const p = new Promise();
 
+  if(isThenable(arg)) return resolveThenable(p, arg);
+  else return p.resolve(arg);
 };
 
+/**
+ * return a promise, it's state is Rejected
+ * @param arg
+ * @returns {*}
+ */
+Promise.reject = (arg) => {
+  const p = new Promise();
 
-Promise.reject = () => {
-
+  return p.reject(arg);
 };
 
+/**
+ * If all promise's state is Fulfilled, we will return a promise,
+ * it's state is Fulfilled
+ * @param args The array of promise
+ */
+Promise.all = (args) => {
+  const len = args.length;
+  const promise = new Promise();
 
-Promise.all = () => {
+  let res = [];
+  let pending = 0;
+  let locked;
 
+  each(args, function (val, key) {
+    val.then((v) => {
+      res[key] = v;
+      if (++pending === len && !locked) promise.resolve(res);
+    }, (err) => {
+      locked = true;
+      promise.reject(err);
+    });
+  });
+
+  return promise;
 };
 
-Promise.race = () => {
+/**
+ * If anyone promise's state is Fulfilled, we will return a promise,
+ * @param args The array of promise
+ */
+Promise.race = (args) => {
+  let promise = new Promise();
+  let called;
+  let reason = null;
 
+  each(args, function(p, i) {
+    p.then(function(v) {
+      if(!called) {
+        promise.resolve(v);
+        called = true;
+      }
+    }, function(e) {
+      if (!called) {
+        called = true;
+        reason = e;
+      }
+    });
+  });
+
+  reason && (promise.state === 'Pending') && promise.reject(reason);
+
+  return promise;
 };
 
 export default Promise;
