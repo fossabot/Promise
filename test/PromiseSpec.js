@@ -12,16 +12,14 @@ import testInit from './PromiseInitSpec';
 import testThenFunction from './PromiseThenSpec';
 
 
-describe("Promise Elixir", function () {
+describe('Promise Elixir', () => {
+  const expect = chai.expect;
 
-  let expect = chai.expect;
-
-  describe("should pass init test", function () {
+  describe('should pass init test', () => {
     testInit(expect);
   });
 
-  describe("should pass then function test", function () {
+  describe('should pass then function test', () => {
     testThenFunction(expect);
   });
-
 });

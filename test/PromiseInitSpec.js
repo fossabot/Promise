@@ -3,10 +3,10 @@
  */
 import Promise from '../src/index';
 
-function testInit(expect){
-  it("should have Pending state when initialize", function () {
-    let promise = new Promise();
-    expect(promise._state).to.equal("Pending");
+function testInit(expect) {
+  it('should have Pending state when initialize', () => {
+    const promise = new Promise();
+    expect(promise.state).to.equal('Pending');
   });
 }
 

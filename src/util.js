@@ -9,7 +9,7 @@
 import Promise from './Promise';
 
 export function isFunc(value) {
-  return (typeof value === "function" && value);
+  return (typeof value === 'function' && value);
 }
 
 export function isPromise(value) {
@@ -20,86 +20,87 @@ export function isThenable(value) {
   return value && value.then && isFunc(value.then);
 }
 
-export function doPromise(promise) {
-  let state = promise._state;
-  let queue = promise["Fulfilled" === state ? "_resolved": "_rejects"];
-  let value = promise._value;
+function once(fn) {
+  let called = null;
+  let result;
 
-  let fn = null;
-  let x = null;
-
-  while(fn = queue.shift()) {
-    try {
-      x = fn.call(promise, value);
-      x && resolveX(promise._next, x);
-    } catch (err) {
-       promise._next._reject(err);
-    }
-  }
-
-  return promise;
+  return (...args) => {
+    if (called) return result;
+    called = true;
+    const arr = [...args];
+    result = fn.apply(this, arr);
+    return this;
+  };
 }
 
 export function resolveX(promise, x) {
-  if (x === promise) promise._reject(new Error('TypeError'));
+  if (x === promise) promise.reject(new Error('TypeError'));
 
   if (isPromise(x)) {
     return resolvePromise(promise, x);
   } else if (isThenable(x)) {
     return resolveThenable(promise, x);
   } else {
-    return promise._resolve(x);
+    return promise.resolve(x);
   }
 }
 
 function resolvePromise(promise1, promise2) {
-  var state = promise2._state;
+  const state = promise2.state;
 
-  if (state === "Pending") {
-    return promise2.then(promise1._resolve.bind(promise1), promise1._reject.bind(promise1))
+  if (state === 'Pending') {
+    return promise2.then(promise1.resolve.bind(promise1), promise1.reject.bind(promise1));
   }
 
-  if (state === "Fulfilled") {
-    return promise1._resolve(promise2._value);
+  if (state === 'Fulfilled') {
+    return promise1.resolve(promise2.value);
   }
 
-  if (state === "Rejected") {
-    return promise1._reject(promise2._value);
+  if (state === 'Rejected') {
+    return promise1.reject(promise2.value);
   }
 }
 
 function resolveThenable(promise, thenable) {
   let called = null;
 
-  let resolve = once(function (r) {
-    if (called) return ;
+  const resolve = once(r => {
+    if (called) return;
     resolveX(promise, r);
     called = true;
   });
 
-  let reject = once(function (x) {
-    if (called) return ;
-    promise._reject(x);
+  const reject = once(x => {
+    if (called) return;
+    promise.reject(x);
     called = true;
   });
 
   try {
     thenable.then.call(thenable, resolve, reject);
   } catch (err) {
-    promise._reject(err);
+    promise.reject(err);
   }
 
   return promise;
 }
 
-function once(fn) {
-  let called = null;
-  let result;
+export function doPromise(promise) {
+  const state = promise.state;
+  const queue = promise[(state === 'Fulfilled') ? 'resolves' : 'rejects'];
+  const value = promise.value;
 
-  return function () {
-    if (called) return result;
-    called = true;
-    result = fn.apply(this, arguments);
+  let fn = null;
+  let x = null;
+
+  while (fn = queue.shift()) {
+    try {
+      x = fn.call(promise, value);
+      if (x) {
+        resolveX(promise.next, x);
+      }
+    } catch (err) {
+      promise.next.reject(err);
+    }
   }
 }
-

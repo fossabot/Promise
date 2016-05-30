@@ -6,13 +6,10 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE.txt file in the root directory of this source tree.
  */
-import { isFunc, isPromise, resolveX, doPromise } from './util';
+import { isFunc, resolveX, doPromise } from './util';
 
 class Promise {
   constructor(value) {
-    // If it not the instance of Promise, we will return a new promise object
-    if (!(this instanceof Promise)) return new Promise(value);
-
     /**
      * The state of current promise object.
      * There can have three kinds of state.
@@ -20,44 +17,46 @@ class Promise {
      * @type {string} The state of current promise object
      * @private
      */
-    this._state = "Pending";
+    this.state = 'Pending';
     /**
      * It store the value of the promise object.
      * It can store both rejected value and fulfilled value.
      * @type {null} the value of the promise object
      * @private
      */
-    this._value = null;
+    this.value = null;
     /**
      * It is used to save the next promise object
      * @type {null} the object is a instance of promise object
      * @private
      */
-    this._next = null;
+    this.next = null;
     /**
      * It store the functions of the promise process.
      * It can store fulfilled function.
      * @type {Array} the functions of the promise process.
      * @private
      */
-    this._resolves = [];
+    this.resolves = [];
     /**
      * It store the functions of the promise process.
      * It can store rejected function.
      * @type {Array} the functions of the promise process.
      * @private
      */
-    this._rejects = [];
+    this.rejects = [];
 
     // bind functions to func argument.
     if (isFunc(value) && value) {
       // It may occur some error. We need to catch them
       try {
-        value(this._resolve.bind(this), this._reject.bind(this));
-      } catch(err) {
-        this._reject(err);
+        value(this.resolve.bind(this), this.reject.bind(this));
+      } catch (err) {
+        this.reject(err);
       }
     }
+
+    return this;
   }
 
   /**
@@ -65,14 +64,16 @@ class Promise {
    * @param value
    * @private
    */
-  _resolve(value) {
-    if (this._state === "Rejected") throw new Error("Illegal call");
+  resolve(value) {
+    if (this.state === 'Rejected') throw new Error('Illegal call');
 
     // change the state, save the value
-    this._state = "Fulfilled";
-    this._value = value;
+    this.state = 'Fulfilled';
+    this.value = value;
 
-    this._resolves.length && doPromise(this);
+    if (this.resolves.length) {
+      doPromise(this);
+    }
 
     return this;
   }
@@ -82,14 +83,16 @@ class Promise {
    * @param value
    * @private
    */
-  _reject(value) {
-    if (this._state === "Fulfilled") throw new Error("Illegal call");
+  reject(value) {
+    if (this.state === 'Fulfilled') throw new Error('Illegal call');
 
     // change the state
-    this._state = "Rejected";
-    this._value = value;
+    this.state = 'Rejected';
+    this.value = value;
 
-    this._rejects.length && doPromise(this);
+    if (this.rejects.length) {
+      doPromise(this);
+    }
 
     return this;
   }
@@ -101,49 +104,48 @@ class Promise {
    * @return{Promise} return a new promise object
    */
   then(onFulfilled, onRejected) {
-
-    let nextPromise = this._next || (this._next = new Promise());
+    const nextPromise = this.next = new Promise();
     let x = null;
 
-    if (this._state === "Pending") {
-      isFunc(onFulfilled) && this._resolves.push(onFulfilled);
-      isFunc(onRejected) && this._rejects.push(onRejected);
-      // nextPromise._resolves = this._resolves;
-      // nextPromise._rejects = this._rejects;
+    if (this.state === 'Pending') {
+      if (isFunc(onFulfilled)) {
+        this.resolves.push(onFulfilled);
+      }
+
+      if (isFunc(onRejected)) {
+        this.rejects.push(onRejected);
+      }
       return nextPromise;
     }
 
 
-    if (this._state === "Fulfilled") {
+    if (this.state === 'Fulfilled') {
       if (!isFunc(onFulfilled)) {
-        nextPromise._resolve(onFulfilled);
+        nextPromise.resolve(onFulfilled);
       } else {
         try {
-          x = onFulfilled(this._value);
-          resolveX(nextPromise, x);
+          x = onFulfilled(this.value);
+          x && resolveX(nextPromise, x);
         } catch (err) {
-          nextPromise._reject(err);
+          nextPromise.reject(err);
         }
       }
-
       return nextPromise;
     }
 
-    if (this._state === "Rejected") {
-      if(!isFunc(onRejected)) {
-        nextPromise._reject(onRejected);
+    if (this.state === 'Rejected') {
+      if (!isFunc(onRejected)) {
+        nextPromise.reject(onRejected);
       } else {
         try {
-          x = onRejected(this._value);
-          resolveX(nextPromise, x);
+          x = onRejected(this.value);
+          x && resolveX(nextPromise, x);
         } catch (err) {
-          nextPromise._reject(err);
+          nextPromise.reject(err);
         }
       }
-
       return nextPromise;
     }
-
   }
 
   /**
@@ -151,9 +153,6 @@ class Promise {
    * @param onRejected
    * @return{Promise} return a new promise object
    */
-  catch(onRejected) {
-
-  }
 }
 
 Promise.resolve = () => {
