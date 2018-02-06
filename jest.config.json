@@ -1,0 +1,28 @@
+{
+  "collectCoverageFrom": [
+    "src/**/*.ts"
+  ],
+  "coverageDirectory": "<rootDir>/coverage",
+  "coveragePathIgnorePatterns": [
+    "<rootDir>/dist/",
+    "<rootDir>/node_modules/",
+    "<rootDir>/test",
+    "<rootDir>/coverage"
+  ],
+  "globals": {},
+  "moduleNameMapper": {
+    "^@/(.*)": "<rootDir>/src/$1"
+  },
+  "moduleFileExtensions": [
+    "ts",
+    "tsx",
+    "js",
+    "json"
+  ],
+  "notify": true,
+  "transform": { "^.+\\.tsx?$": "ts-jest" },
+  "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+  "watchPathIgnorePatterns": [
+    "<rootDir>/node_modules/"
+  ]
+}

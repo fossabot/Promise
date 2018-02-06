@@ -2,24 +2,46 @@
   "private": true,
   "name": "Promise",
   "version": "2.0.0",
-  "description": "Promise实现, 符合Promise/A+标准",
-  "repository": "blackcater/Promise",
-  "author": "blackcater",
+  "description": "Promise简单实现, 符合Promimse/A+",
+  "main": "dist/promise.js",
+  "module": "dist/promise.es.js",
+  "jsnext:main": "dist/promise.es.js",
+  "repository": "https://github.com/the-bcflow/Promise.git",
+  "author": "blackcater <blackcater2015@gmail.com>",
   "license": "MIT",
-  "keywords": ["promise", "typescript", "wibi"],
-  "main": "dist/index.js",
-  "module": "dist/index.es6.js",
-  "jsnext:main": "dist/index.es6.js",
-  "devDependencies": {},
+  "keywords": ["promise", "typescript"],
   "scripts": {
-    "start": "",
-    "dev": "",
-    "pro": "",
-    "test": "",
-    "test:watch": "",
-    "test:cover": "",
-    "prettier": "",
+    "dev": "rollup -c rollup.config.js -w",
+    "pro": "rollup -c rollup.config.js",
+    "lint": "tslint -c tslint.json '{src,test}/**/*.ts' --format codeFrame",
+    "prettier": "prettier --write '{src,test}/**/*.ts'",
+    "test": "jest -c jest.config.json",
+    "test:watch": "jest -c jest.config.json --watch",
+    "test:coverage": "jest -c jest.config.json --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
-    "prepublish": ""
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "tslint -c tslint.json --format codeFrame --fix",
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "^22.1.0",
+    "@types/node": "^9.3.0",
+    "coveralls": "^3.0.0",
+    "husky": "^0.14.3",
+    "jest": "^22.1.4",
+    "lint-staged": "^6.0.1",
+    "prettier": "^1.10.2",
+    "rollup": "^0.55.0",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.2",
+    "rollup-plugin-typescript": "^0.8.1",
+    "ts-jest": "^22.0.1",
+    "tslint": "^5.9.1",
+    "typescript": "^2.6.2"
   }
 }
