@@ -16,8 +16,10 @@ type PromiseStateType = 'pending' | 'fulfilled' | 'rejected'
 type PromiseCallbackType = () => any
 type PromiseCallbackListType = PromiseCallbackType[]
 
-function nextTick(cb, args, context) {
-  if (process) {
+function nextTick(cb, args = [], context = {}) {
+  if (!cb) return
+
+  if (process && process.nextTick) {
     process.nextTick(() => cb.apply(context, args))
   } else if (setImmediate) {
     setImmediate(() => cb.apply(context, args))
