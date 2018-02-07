@@ -197,22 +197,50 @@ export default class Promise {
    * @param reject
    */
   public then(resolve, reject): Promise {
-    if (typeof resolve === 'function') {
-      this.fulfilledCbs.push(resolve)
-    }
+    if (this.state === 'pending') {
+      if (typeof resolve === 'function') {
+        this.fulfilledCbs.push(resolve)
+      }
 
-    if (typeof reject === 'function') {
-      this.rejectedCbs.push(reject)
+      if (typeof reject === 'function') {
+        this.rejectedCbs.push(reject)
+      }
+
+      return this.nextPromise
     }
 
     if (this.state === 'fulfilled') {
       // fulfilled'
-      this._callbacks()
+      if (typeof resolve === 'function') {
+        try {
+          const x = resolve(this.value)
+
+          procedure(this.nextPromise, x)
+        } catch (e) {
+          this.nextPromise._reject(e)
+        }
+
+        return this.nextPromise
+      } else {
+        return this
+      }
     }
 
     if (this.state === 'rejected') {
       // rejected
-      this._callbacks()
+      if (typeof reject === 'function') {
+        try {
+          const x = resolve(this.value)
+
+          procedure(this.nextPromise, x)
+        } catch (e) {
+          this.nextPromise._reject(e)
+        }
+
+        return this.nextPromise
+      } else {
+        return this
+      }
     }
 
     return this.nextPromise
