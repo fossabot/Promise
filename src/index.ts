@@ -212,35 +212,74 @@ export default class Promise {
     if (this.state === 'fulfilled') {
       // fulfilled'
       if (typeof resolve === 'function') {
-        try {
-          const x = resolve(this.value)
+        nextTick(() => {
+          try {
+            const x = resolve(this.value)
 
-          procedure(this.nextPromise, x)
-        } catch (e) {
-          this.nextPromise._reject(e)
-        }
-
-        return this.nextPromise
+            procedure(this.nextPromise, x)
+          } catch (e) {
+            this.nextPromise._reject(e)
+          }
+        })
       } else {
-        return this
+        this.nextPromise._resolve(this.value)
       }
+
+      return this.nextPromise
     }
 
     if (this.state === 'rejected') {
       // rejected
       if (typeof reject === 'function') {
-        try {
-          const x = resolve(this.value)
+        nextTick(() => {
+          try {
+            const x = reject(this.value)
 
-          procedure(this.nextPromise, x)
-        } catch (e) {
-          this.nextPromise._reject(e)
-        }
-
-        return this.nextPromise
+            procedure(this.nextPromise, x)
+          } catch (e) {
+            this.nextPromise._reject(e)
+          }
+        })
       } else {
-        return this
+        this.nextPromise._reject(this.value)
       }
+
+      return this.nextPromise
+    }
+
+    return this.nextPromise
+  }
+
+  public catch(reject): Promise {
+    if (this.state === 'pending') {
+      this.rejectedCbs.push(reject)
+
+      return this.nextPromise
+    }
+
+    if (this.state === 'fulfilled') {
+      this.nextPromise._resolve(this.value)
+
+      return this.nextPromise
+    }
+
+    if (this.state === 'rejected') {
+      // rejected
+      if (typeof reject === 'function') {
+        nextTick(() => {
+          try {
+            const x = reject(this.value)
+
+            procedure(this.nextPromise, x)
+          } catch (e) {
+            this.nextPromise._reject(e)
+          }
+        })
+      } else {
+        this.nextPromise._reject(this.value)
+      }
+
+      return this.nextPromise
     }
 
     return this.nextPromise
