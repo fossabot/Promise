@@ -23,6 +23,14 @@ function nextTick(cb) {
         setTimeout(cb, 0);
     }
 }
+function createArray(num, init) {
+    if (num === void 0) { num = 0; }
+    var arr = [];
+    for (var i = 0; i < num; i++) {
+        arr.push(init);
+    }
+    return arr;
+}
 // 处理 下一个 promise
 function procedure(promise, x) {
     if (promise === x) {
@@ -71,18 +79,14 @@ function procedureThenable(promise, x) {
 var Promise$1 = (function () {
     // FIXME: 有些许不规范，resolver 真实是必需传入项
     function Promise(resolver) {
-        // 存储下一个 promise
-        this.nextPromise = new Promise();
-        // 成功回调事件
-        this.fulfilledCbs = [];
-        // 失败回调事件
-        this.rejectedCbs = [];
         // 当前 Promise 状态
         this.state = 'pending';
+        // 存储 then 回调
+        this.next = [];
         if (resolver && typeof resolver !== 'function')
             throw new Error("Promise resolver " + resolver + " is not a function");
         if (resolver)
-            resolver(this._resolve, this._reject);
+            resolver(this._resolve.bind(this), this._reject.bind(this));
     }
     /**
      * 快速创建一个 promise 是实例，且 state 为 fulfilled
@@ -111,8 +115,8 @@ var Promise$1 = (function () {
     };
     Promise.all = function (list) {
         return new Promise(function (resolve, reject) {
-            var states = new Array(list.length);
-            var values = new Array(list.length);
+            var states = createArray(list.length, false);
+            var values = createArray(list.length, undefined);
             var _loop_1 = function(i, len) {
                 var item = list[i];
                 var promise = new Promise();
@@ -156,14 +160,14 @@ var Promise$1 = (function () {
      */
     Promise.prototype.then = function (resolve, reject) {
         var _this = this;
+        var nextPromise = new Promise();
         if (this.state === 'pending') {
-            if (typeof resolve === 'function') {
-                this.fulfilledCbs.push(resolve);
-            }
-            if (typeof reject === 'function') {
-                this.rejectedCbs.push(reject);
-            }
-            return this.nextPromise;
+            this.next.push({
+                resolve,
+                reject,
+                promise: nextPromise,
+            });
+            return nextPromise;
         }
         if (this.state === 'fulfilled') {
             // fulfilled'
@@ -171,17 +175,17 @@ var Promise$1 = (function () {
                 nextTick(function () {
                     try {
                         var x = resolve(_this.value);
-                        procedure(_this.nextPromise, x);
+                        procedure(nextPromise, x);
                     }
                     catch (e) {
-                        _this.nextPromise._reject(e);
+                        nextPromise._reject(e);
                     }
                 });
             }
             else {
-                this.nextPromise._resolve(this.value);
+                nextPromise._resolve(this.value);
             }
-            return this.nextPromise;
+            return nextPromise;
         }
         if (this.state === 'rejected') {
             // rejected
@@ -189,49 +193,22 @@ var Promise$1 = (function () {
                 nextTick(function () {
                     try {
                         var x = reject(_this.value);
-                        procedure(_this.nextPromise, x);
+                        procedure(nextPromise, x);
                     }
                     catch (e) {
-                        _this.nextPromise._reject(e);
+                        nextPromise._reject(e);
                     }
                 });
             }
             else {
-                this.nextPromise._reject(this.value);
+                nextPromise._reject(this.value);
             }
-            return this.nextPromise;
+            return nextPromise;
         }
-        return this.nextPromise;
+        return nextPromise;
     };
     Promise.prototype.catch = function (reject) {
-        var _this = this;
-        if (this.state === 'pending') {
-            this.rejectedCbs.push(reject);
-            return this.nextPromise;
-        }
-        if (this.state === 'fulfilled') {
-            this.nextPromise._resolve(this.value);
-            return this.nextPromise;
-        }
-        if (this.state === 'rejected') {
-            // rejected
-            if (typeof reject === 'function') {
-                nextTick(function () {
-                    try {
-                        var x = reject(_this.value);
-                        procedure(_this.nextPromise, x);
-                    }
-                    catch (e) {
-                        _this.nextPromise._reject(e);
-                    }
-                });
-            }
-            else {
-                this.nextPromise._reject(this.value);
-            }
-            return this.nextPromise;
-        }
-        return this.nextPromise;
+        return this.then(void 0, reject);
     };
     Promise.prototype._resolve = function (value) {
         if (this.state !== 'pending')
@@ -249,21 +226,23 @@ var Promise$1 = (function () {
     };
     Promise.prototype._callbacks = function () {
         var _this = this;
-        var queue = this.state === 'fulfilled' ? this.fulfilledCbs : this.rejectedCbs;
-        if (!queue.length)
+        if (!this.next.length)
             return;
         var _loop_2 = function(i, len) {
+            var _a = this_1.next[i], resolve = _a.resolve, reject = _a.reject, promise = _a.promise;
+            var cb = this_1.state === 'fulfilled' ? resolve : reject;
             nextTick(function () {
                 try {
-                    var x = typeof queue === 'function' ? queue[i](_this.value) : _this.value;
-                    procedure(_this.nextPromise, x);
+                    var x = typeof cb === 'function' ? cb(_this.value) : _this.value;
+                    procedure(promise, x);
                 }
                 catch (e) {
-                    _this.nextPromise._reject(e);
+                    promise._reject(e);
                 }
             });
         };
-        for (var i = 0, len = queue.length; i < len; i++) {
+        var this_1 = this;
+        for (var i = 0, len = this.next.length; i < len; i++) {
             _loop_2(i, len);
         }
     };

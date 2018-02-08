@@ -40,6 +40,16 @@ function nextTick(cb) {
   }
 }
 
+function createArray(num = 0, init?) {
+  const arr = []
+
+  for (let i = 0; i < num; i++) {
+    arr.push(init)
+  }
+
+  return arr
+}
+
 // 处理 下一个 promise
 function procedure(promise: Promise, x: any) {
   if (promise === x) {
@@ -126,8 +136,8 @@ export default class Promise {
 
   public static all(list: any[]): Promise {
     return new Promise((resolve, reject) => {
-      const states = new Array(list.length)
-      const values = new Array(list.length)
+      const states = createArray(list.length, false)
+      const values = createArray(list.length, undefined)
 
       for (let i = 0, len = list.length; i < len; i++) {
         const item = list[i]
@@ -182,7 +192,7 @@ export default class Promise {
     if (resolver && typeof resolver !== 'function')
       throw new Error(`Promise resolver ${resolver} is not a function`)
 
-    if (resolver) resolver(this._resolve, this._reject)
+    if (resolver) resolver(this._resolve.bind(this), this._reject.bind(this))
   }
 
   /**
