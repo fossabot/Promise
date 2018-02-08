@@ -11,9 +11,15 @@
 export interface IPromiseThenable {
   then: (a: (x: any) => any, b: (y: any) => any) => void
 }
+
+export interface IPromiseNextObject {
+  resolve: PromiseCallbackType
+  reject: PromiseCallbackType
+  promise: Promise
+}
+
 export type PromiseStateType = 'pending' | 'fulfilled' | 'rejected'
 export type PromiseCallbackType = (value: any) => any
-export type PromiseCallbackListType = PromiseCallbackType[]
 
 function isPromise(x) {
   return x instanceof Promise
@@ -166,14 +172,10 @@ export default class Promise {
 
   // 存储成功结果值
   public value: any
-  // 存储下一个 promise
-  public nextPromise: Promise = new Promise()
-  // 成功回调事件
-  public fulfilledCbs: PromiseCallbackListType = []
-  // 失败回调事件
-  public rejectedCbs: PromiseCallbackListType = []
   // 当前 Promise 状态
   public state: PromiseStateType = 'pending'
+  // 存储 then 回调
+  private next: IPromiseNextObject[] = []
 
   // FIXME: 有些许不规范，resolver 真实是必需传入项
   public constructor(resolver?) {
@@ -190,16 +192,16 @@ export default class Promise {
    * @param reject
    */
   public then(resolve?, reject?): Promise {
+    const nextPromise = new Promise()
+
     if (this.state === 'pending') {
-      if (typeof resolve === 'function') {
-        this.fulfilledCbs.push(resolve)
-      }
+      this.next.push({
+        resolve,
+        reject,
+        promise: nextPromise,
+      })
 
-      if (typeof reject === 'function') {
-        this.rejectedCbs.push(reject)
-      }
-
-      return this.nextPromise
+      return nextPromise
     }
 
     if (this.state === 'fulfilled') {
@@ -209,16 +211,16 @@ export default class Promise {
           try {
             const x = resolve(this.value)
 
-            procedure(this.nextPromise, x)
+            procedure(nextPromise, x)
           } catch (e) {
-            this.nextPromise._reject(e)
+            nextPromise._reject(e)
           }
         })
       } else {
-        this.nextPromise._resolve(this.value)
+        nextPromise._resolve(this.value)
       }
 
-      return this.nextPromise
+      return nextPromise
     }
 
     if (this.state === 'rejected') {
@@ -228,54 +230,23 @@ export default class Promise {
           try {
             const x = reject(this.value)
 
-            procedure(this.nextPromise, x)
+            procedure(nextPromise, x)
           } catch (e) {
-            this.nextPromise._reject(e)
+            nextPromise._reject(e)
           }
         })
       } else {
-        this.nextPromise._reject(this.value)
+        nextPromise._reject(this.value)
       }
 
-      return this.nextPromise
+      return nextPromise
     }
 
-    return this.nextPromise
+    return nextPromise
   }
 
   public catch(reject): Promise {
-    if (this.state === 'pending') {
-      this.rejectedCbs.push(reject)
-
-      return this.nextPromise
-    }
-
-    if (this.state === 'fulfilled') {
-      this.nextPromise._resolve(this.value)
-
-      return this.nextPromise
-    }
-
-    if (this.state === 'rejected') {
-      // rejected
-      if (typeof reject === 'function') {
-        nextTick(() => {
-          try {
-            const x = reject(this.value)
-
-            procedure(this.nextPromise, x)
-          } catch (e) {
-            this.nextPromise._reject(e)
-          }
-        })
-      } else {
-        this.nextPromise._reject(this.value)
-      }
-
-      return this.nextPromise
-    }
-
-    return this.nextPromise
+    return this.then(void 0, reject)
   }
 
   public _resolve(value) {
@@ -297,20 +268,19 @@ export default class Promise {
   }
 
   private _callbacks() {
-    const queue =
-      this.state === 'fulfilled' ? this.fulfilledCbs : this.rejectedCbs
+    if (!this.next.length) return
 
-    if (!queue.length) return
+    for (let i = 0, len = this.next.length; i < len; i++) {
+      const { resolve, reject, promise } = this.next[i]
+      const cb = this.state === 'fulfilled' ? resolve : reject
 
-    for (let i = 0, len = queue.length; i < len; i++) {
       nextTick(() => {
         try {
-          const x =
-            typeof queue === 'function' ? queue[i](this.value) : this.value
+          const x = typeof cb === 'function' ? cb(this.value) : this.value
 
-          procedure(this.nextPromise, x)
+          procedure(promise, x)
         } catch (e) {
-          this.nextPromise._reject(e)
+          promise._reject(e)
         }
       })
     }
