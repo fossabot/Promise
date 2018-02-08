@@ -1,9 +1,84 @@
 import Promise from '../src/'
 
 describe('Promise', () => {
-  // describe('#then', () => {
-  //
-  // })
+  describe('#then', () => {
+    test('promise resolve a value immediately', () => {
+      expect.assertions(7)
+
+      const onFulfilledFunc = jest.fn(x => x)
+      const onRejectedFunc = jest.fn(x => x)
+      const promise = Promise.resolve(1).then(onFulfilledFunc, onRejectedFunc)
+
+      expect(promise.state).toBe('pending')
+      expect(onFulfilledFunc).not.toHaveBeenCalled()
+      expect(onRejectedFunc).not.toHaveBeenCalled()
+
+      return promise.then(x => {
+        expect(x).toBe(1)
+        expect(onFulfilledFunc).toHaveBeenCalled()
+        expect(onFulfilledFunc).toHaveBeenCalledTimes(1)
+        expect(onRejectedFunc).not.toHaveBeenCalled()
+      })
+    })
+    test('promise resolve a value after a few time', () => {
+      expect.assertions(7)
+
+      const onFulfilledFunc = jest.fn(x => x)
+      const onRejectedFunc = jest.fn(x => x)
+      const promise = new Promise(resolve =>
+        setTimeout(() => resolve(1), 200)
+      ).then(onFulfilledFunc, onRejectedFunc)
+
+      expect(promise.state).toBe('pending')
+      expect(onFulfilledFunc).not.toHaveBeenCalled()
+      expect(onRejectedFunc).not.toHaveBeenCalled()
+
+      return promise.then(x => {
+        expect(x).toBe(1)
+        expect(onFulfilledFunc).toHaveBeenCalled()
+        expect(onFulfilledFunc).toHaveBeenCalledTimes(1)
+        expect(onRejectedFunc).not.toHaveBeenCalled()
+      })
+    })
+    test('promise reject a value immediately', () => {
+      expect.assertions(7)
+
+      const onFulfilledFunc = jest.fn(x => x)
+      const onRejectedFunc = jest.fn(x => x)
+      const promise = Promise.reject(1).then(onFulfilledFunc, onRejectedFunc)
+
+      expect(promise.state).toBe('pending')
+      expect(onFulfilledFunc).not.toHaveBeenCalled()
+      expect(onRejectedFunc).not.toHaveBeenCalled()
+
+      return promise.then(x => {
+        expect(x).toBe(1)
+        expect(onFulfilledFunc).not.toHaveBeenCalled()
+        expect(onRejectedFunc).toHaveBeenCalled()
+        expect(onRejectedFunc).toHaveBeenCalledTimes(1)
+      })
+    })
+    test('promise reject a value after a few time', () => {
+      expect.assertions(7)
+
+      const onFulfilledFunc = jest.fn(x => x)
+      const onRejectedFunc = jest.fn(x => x)
+      const promise = new Promise((resolve, reject) =>
+        setTimeout(() => reject(1), 200)
+      ).then(onFulfilledFunc, onRejectedFunc)
+
+      expect(promise.state).toBe('pending')
+      expect(onFulfilledFunc).not.toHaveBeenCalled()
+      expect(onRejectedFunc).not.toHaveBeenCalled()
+
+      return promise.then(x => {
+        expect(x).toBe(1)
+        expect(onFulfilledFunc).not.toHaveBeenCalled()
+        expect(onRejectedFunc).toHaveBeenCalled()
+        expect(onRejectedFunc).toHaveBeenCalledTimes(1)
+      })
+    })
+  })
   describe('#catch', () => {
     //  同步 promise reject，catch
     test('promise reject a value immediately', () => {
@@ -12,7 +87,7 @@ describe('Promise', () => {
       const rejectFunc = jest.fn(x => x)
       const promise = Promise.reject(1).catch(rejectFunc)
 
-      expect(promise.state).toBe('rejected')
+      expect(promise.state).toBe('pending')
       expect(rejectFunc).toHaveBeenCalled()
       expect(rejectFunc).toHaveBeenCalledTimes(1)
 
@@ -43,7 +118,7 @@ describe('Promise', () => {
       const rejectFunc = jest.fn(x => x)
       const promise = Promise.resolve(1).catch(rejectFunc)
 
-      expect(promise.state).toBe('fulfilled')
+      expect(promise.state).toBe('pending')
       expect(rejectFunc).not.toHaveBeenCalled()
 
       return promise.then(x => expect(x).toBe(1))
