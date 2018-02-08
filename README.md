@@ -1,10 +1,8 @@
-# [promise-elixir](https://github.com/blackcater/promise-elixir)
+# [Promise](https://github.com/blackcater/Promise)
 
-[![NPM version](http://img.shields.io/npm/v/promise-elixir.svg?style=flat-square)](https://www.npmjs.com/package/promise-elixir)
-[![NPM downloads](http://img.shields.io/npm/dm/promise-elixir.svg?style=flat-square)](https://www.npmjs.com/package/promise-elixir)
-[![Build Status](http://img.shields.io/travis/blackcater/promise-elixir/master.svg?style=flat-square)](https://travis-ci.org/blackcater/promise-elixir)
-[![codecov](https://codecov.io/gh/blackcater/promise-elixir/branch/master/graph/badge.svg)](https://codecov.io/gh/blackcater/promise-elixir)
-[![Dependency Status](http://img.shields.io/david/blackcater/promise-elixir.svg?style=flat-square)](https://david-dm.org/blackcater/promise-elixir)
+[![CircleCI](https://circleci.com/gh/blackcater/Promise/tree/master.svg?style=svg)](https://circleci.com/gh/blackcater/Promise/tree/master)
+[![Coverage Status](https://coveralls.io/repos/github/blackcater/Promise/badge.svg?branch=master)](https://coveralls.io/github/blackcater/Promise?branch=master)
+[![David](https://img.shields.io/david/blackcater/Promise.svg)]()
 
 > Promise实现, 符合Promise/A+标准
 
@@ -17,18 +15,11 @@
 Run one, or a combination of the following commands to lint and test your code:
 
 ```sh
-$ npm test              # Run unit tests with Mocha
-$ npm run test:watch    # Run unit tests with Mocha, and watch files for changes
-$ npm run test:cover    # Run unit tests with code coverage by Istanbul
-```
-
-To launch the documentation site, run:
-
-```sh
-$ npm install -g easystatic
-$ npm start
+$ npm test                 # Run unit tests with Jest
+$ npm run test:watch       # Run unit tests with Jest, and watch files for changes
+$ npm run test:coverage    # Run unit tests with Jest, and generate coverage report
 ```
 
 ### License
 
-MIT © 2016 blackcater
+MIT © 2018 blackcater
