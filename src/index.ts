@@ -8,13 +8,12 @@
  */
 
 // thenable
-interface IPromiseThenable {
+export interface IPromiseThenable {
   then: (a: (x: any) => any, b: (y: any) => any) => void
 }
-
-type PromiseStateType = 'pending' | 'fulfilled' | 'rejected'
-type PromiseCallbackType = (value: any) => any
-type PromiseCallbackListType = PromiseCallbackType[]
+export type PromiseStateType = 'pending' | 'fulfilled' | 'rejected'
+export type PromiseCallbackType = (value: any) => any
+export type PromiseCallbackListType = PromiseCallbackType[]
 
 function isPromise(x) {
   return x instanceof Promise
@@ -190,7 +189,7 @@ export default class Promise {
    * @param resolve
    * @param reject
    */
-  public then(resolve, reject): Promise {
+  public then(resolve?, reject?): Promise {
     if (this.state === 'pending') {
       if (typeof resolve === 'function') {
         this.fulfilledCbs.push(resolve)
