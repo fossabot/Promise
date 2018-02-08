@@ -62,9 +62,65 @@ describe('Promise', () => {
       return promise.catch(x => expect(x).toBe(1))
     })
   })
-  // describe('Promise@reject', () => {
-  //
-  // })
+  describe('Promise@reject', () => {
+    test('reject normal value', () => {
+      expect.assertions(2)
+
+      const promise = Promise.reject(1)
+
+      expect(promise.state).toBe('rejected')
+
+      return promise.catch(x => expect(x).toBe(1))
+    })
+    test('reject promise value which resolve a normal value', () => {
+      expect.assertions(2)
+
+      const value = Promise.resolve(1)
+      const promise = Promise.reject(value)
+
+      expect(promise.state).toBe('rejected')
+
+      return promise.catch(x => expect(x).toBe(value))
+    })
+    test('reject promise value which reject a normal value', () => {
+      expect.assertions(2)
+
+      const value = Promise.reject(1)
+      const promise = Promise.reject(value)
+
+      expect(promise.state).toBe('rejected')
+
+      return promise.catch(x => expect(x).toBe(value))
+    })
+    test('reject thenable value which resolve a normal value', () => {
+      expect.assertions(2)
+
+      const value = {
+        then(resolve) {
+          resolve(1)
+        },
+      }
+      const promise = Promise.reject(value)
+
+      expect(promise.state).toBe('rejected')
+
+      return promise.catch(x => expect(x).toBe(value))
+    })
+    test('reject thenable value which reject a normal value', () => {
+      expect.assertions(2)
+
+      const value = {
+        then(resolve, reject) {
+          reject(1)
+        },
+      }
+      const promise = Promise.reject(value)
+
+      expect(promise.state).toBe('rejected')
+
+      return promise.catch(x => expect(x).toBe(value))
+    })
+  })
   // describe('Promise@all', () => {
   //
   // })
