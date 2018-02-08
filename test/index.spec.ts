@@ -4,9 +4,68 @@ describe('Promise', () => {
   // describe('#then', () => {
   //
   // })
-  // describe('#catch', () => {
-  //
-  // })
+  describe('#catch', () => {
+    //  同步 promise reject，catch
+    test('promise reject a value immediately', () => {
+      expect.assertions(4)
+
+      const rejectFunc = jest.fn(x => x)
+      const promise = Promise.reject(1).catch(rejectFunc)
+
+      expect(promise.state).toBe('rejected')
+      expect(rejectFunc).toHaveBeenCalled()
+      expect(rejectFunc).toHaveBeenCalledTimes(1)
+
+      return promise.then(x => expect(x).toBe(1))
+    })
+    // 异步 promise reject，catch
+    test('promise reject a value after a few time', () => {
+      expect.assertions(5)
+
+      const rejectFunc = jest.fn(x => x)
+      const promise = new Promise((resolve, reject) =>
+        setTimeout(() => reject(1), 200)
+      ).catch(rejectFunc)
+
+      expect(promise.state).toBe('pending')
+      expect(rejectFunc).not.toHaveBeenCalled()
+
+      return promise.then(x => {
+        expect(x).toBe(1)
+        expect(rejectFunc).toHaveBeenCalled()
+        expect(rejectFunc).toHaveBeenCalledTimes(1)
+      })
+    })
+    // 同步 promise resolve catch
+    test('promise resolve a value immediately', () => {
+      expect.assertions(3)
+
+      const rejectFunc = jest.fn(x => x)
+      const promise = Promise.resolve(1).catch(rejectFunc)
+
+      expect(promise.state).toBe('fulfilled')
+      expect(rejectFunc).not.toHaveBeenCalled()
+
+      return promise.then(x => expect(x).toBe(1))
+    })
+    // 异步 promise resolve catch
+    test('promise resolve a value after a few time', () => {
+      expect.assertions(4)
+
+      const rejectFunc = jest.fn(x => x)
+      const promise = new Promise(resolve =>
+        setTimeout(() => resolve(1), 200)
+      ).catch(rejectFunc)
+
+      expect(promise.state).toBe('pending')
+      expect(rejectFunc).not.toHaveBeenCalled()
+
+      return promise.then(x => {
+        expect(x).toBe(1)
+        expect(rejectFunc).not.toHaveBeenCalled()
+      })
+    })
+  })
   describe('Promise@resolve', () => {
     test('resolve normal value', () => {
       expect.assertions(2)
