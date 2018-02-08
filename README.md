@@ -8,12 +8,6 @@
 
 > Promise实现, 符合Promise/A+标准
 
-### How to Install
-
-```sh
-$ npm install promise-elixir
-```
-
 ### Getting Started
 
 ...
