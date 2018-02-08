@@ -3,12 +3,16 @@
   "extends": [ "tslint:recommended" ],
   "jsRules": {},
   "rules": {
+    "arrow-parens": false,
+    "curly": false,
+    "object-literal-sort-keys": false,
     "quotemark": [
       true,
       "single",
       "jsx-double"
     ],
-    "semicolon": false
+    "semicolon": false,
+    "trailing-comma": false
   },
   "rulesDirectory": []
 }
