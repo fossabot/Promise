@@ -256,35 +256,46 @@ describe('Promise', () => {
     })
   })
   describe('Promise@all', () => {
-    test('all item are normal value', () => {
+    test('all items are normal value', () => {
       expect.assertions(3)
 
-      const promise = Promise.all([1, 2, 3])
+      const promise = Promise.all([1, 2])
 
       expect(promise.state).toBe('pending')
 
       return promise.then(x => {
-        expect(x).toHaveLength(3)
-        expect(x).toMatchObject([1, 2, 3])
+        expect(x).toHaveLength(2)
+        expect(x).toMatchObject([1, 2])
       })
     })
-    test('all item are promise', () => {
+    test('all items are promise', () => {
+      expect.assertions(3)
+
+      const promise = Promise.all([Promise.resolve(1), Promise.resolve(2)])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => {
+        expect(x).toHaveLength(2)
+        expect(x).toMatchObject([1, 2])
+      })
+    })
+    test('all items are async promise', () => {
       expect.assertions(3)
 
       const promise = Promise.all([
-        Promise.resolve(1),
-        Promise.resolve(2),
-        Promise.resolve(3),
+        new Promise(resolve => setTimeout(() => resolve(1), 400)),
+        new Promise(resolve => setTimeout(() => resolve(2), 200)),
       ])
 
       expect(promise.state).toBe('pending')
 
       return promise.then(x => {
-        expect(x).toHaveLength(3)
-        expect(x).toMatchObject([1, 2, 3])
+        expect(x).toHaveLength(2)
+        expect(x).toMatchObject([1, 2])
       })
     })
-    test('all item are thenable', () => {
+    test('all items are thenable value', () => {
       expect.assertions(3)
 
       const promise = Promise.all([
@@ -298,29 +309,27 @@ describe('Promise', () => {
             resolve(2)
           },
         },
-        {
-          then(resolve) {
-            resolve(3)
-          },
-        },
       ])
 
       expect(promise.state).toBe('pending')
 
       return promise.then(x => {
-        expect(x).toHaveLength(3)
-        expect(x).toMatchObject([1, 2, 3])
+        expect(x).toHaveLength(2)
+        expect(x).toMatchObject([1, 2])
       })
     })
-    test('all item are different', () => {
+    test('all items are async thenable value', () => {
       expect.assertions(3)
 
       const promise = Promise.all([
-        1,
-        Promise.resolve(2),
         {
           then(resolve) {
-            resolve(3)
+            setTimeout(() => resolve(1), 400)
+          },
+        },
+        {
+          then(resolve) {
+            setTimeout(() => resolve(2), 200)
           },
         },
       ])
@@ -328,11 +337,11 @@ describe('Promise', () => {
       expect(promise.state).toBe('pending')
 
       return promise.then(x => {
-        expect(x).toHaveLength(3)
-        expect(x).toMatchObject([1, 2, 3])
+        expect(x).toHaveLength(2)
+        expect(x).toMatchObject([1, 2])
       })
     })
-    test('some item reject', () => {
+    test('some item reject, resolve first', () => {
       expect.assertions(2)
 
       const promise = Promise.all([Promise.resolve(1), Promise.reject(2)])
@@ -341,6 +350,17 @@ describe('Promise', () => {
 
       return promise.catch(x => {
         expect(x).toBe(2)
+      })
+    })
+    test('some item reject, reject first', () => {
+      expect.assertions(2)
+
+      const promise = Promise.all([Promise.reject(1), Promise.resolve(2)])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.catch(x => {
+        expect(x).toBe(1)
       })
     })
   })
