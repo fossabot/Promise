@@ -114,15 +114,9 @@ export default class Promise {
    *    > Promise.resolve(<any>)
    */
   public static reject(value): Promise {
-    const promise = new Promise()
-
-    if (isPromise(value) || isThenable(value)) {
-      procedure(promise, value)
-    } else {
-      promise._reject(value)
-    }
-
-    return promise
+    return new Promise((resolve, reject) => {
+      reject(value)
+    })
   }
 
   public static all(list: any[]): Promise {
