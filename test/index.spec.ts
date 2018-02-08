@@ -344,9 +344,96 @@ describe('Promise', () => {
       })
     })
   })
-  // describe('Promise@race', () => {
-  //
-  // })
+  describe('Promise@race', () => {
+    test('all item are normal value', () => {
+      expect.assertions(2)
+
+      const promise = Promise.race([1, 2])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => expect(x).toBe(1))
+    })
+    test('all item are promise value', () => {
+      expect.assertions(2)
+
+      const promise = Promise.race([Promise.resolve(1), Promise.resolve(2)])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => expect(x).toBe(1))
+    })
+    test('all item are async promise value', () => {
+      expect.assertions(2)
+
+      const promise = Promise.race([
+        new Promise(resolve => setTimeout(() => resolve(1), 400)),
+        new Promise(resolve => setTimeout(() => resolve(2), 200)),
+      ])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => expect(x).toBe(2))
+    })
+    test('all item are thenable value', () => {
+      expect.assertions(2)
+
+      const promise = Promise.race([
+        {
+          then(resolve) {
+            resolve(1)
+          },
+        },
+        {
+          then(resolve) {
+            resolve(2)
+          },
+        },
+      ])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => expect(x).toBe(1))
+    })
+    test('all item are async thenable value', () => {
+      expect.assertions(2)
+
+      const promise = Promise.race([
+        {
+          then(resolve) {
+            setTimeout(() => resolve(1), 400)
+          },
+        },
+        {
+          then(resolve) {
+            setTimeout(() => resolve(2), 200)
+          },
+        },
+      ])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => expect(x).toBe(2))
+    })
+    test('some item reject, resolve first', () => {
+      expect.assertions(2)
+
+      const promise = Promise.race([Promise.resolve(1), Promise.reject(2)])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => expect(x).toBe(1))
+    })
+    test('some item reject, reject first', () => {
+      expect.assertions(2)
+
+      const promise = Promise.race([Promise.reject(1), Promise.resolve(2)])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.catch(x => expect(x).toBe(1))
+    })
+  })
   describe('#constructor', () => {
     test('create promise without resolver', () => {
       const promise = new Promise()
