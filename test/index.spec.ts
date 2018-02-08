@@ -255,9 +255,95 @@ describe('Promise', () => {
       return promise.catch(x => expect(x).toBe(value))
     })
   })
-  // describe('Promise@all', () => {
-  //
-  // })
+  describe('Promise@all', () => {
+    test('all item are normal value', () => {
+      expect.assertions(3)
+
+      const promise = Promise.all([1, 2, 3])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => {
+        expect(x).toHaveLength(3)
+        expect(x).toMatchObject([1, 2, 3])
+      })
+    })
+    test('all item are promise', () => {
+      expect.assertions(3)
+
+      const promise = Promise.all([
+        Promise.resolve(1),
+        Promise.resolve(2),
+        Promise.resolve(3),
+      ])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => {
+        expect(x).toHaveLength(3)
+        expect(x).toMatchObject([1, 2, 3])
+      })
+    })
+    test('all item are thenable', () => {
+      expect.assertions(3)
+
+      const promise = Promise.all([
+        {
+          then(resolve) {
+            resolve(1)
+          },
+        },
+        {
+          then(resolve) {
+            resolve(2)
+          },
+        },
+        {
+          then(resolve) {
+            resolve(3)
+          },
+        },
+      ])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => {
+        expect(x).toHaveLength(3)
+        expect(x).toMatchObject([1, 2, 3])
+      })
+    })
+    test('all item are different', () => {
+      expect.assertions(3)
+
+      const promise = Promise.all([
+        1,
+        Promise.resolve(2),
+        {
+          then(resolve) {
+            resolve(3)
+          },
+        },
+      ])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.then(x => {
+        expect(x).toHaveLength(3)
+        expect(x).toMatchObject([1, 2, 3])
+      })
+    })
+    test('some item reject', () => {
+      expect.assertions(2)
+
+      const promise = Promise.all([Promise.resolve(1), Promise.reject(2)])
+
+      expect(promise.state).toBe('pending')
+
+      return promise.catch(x => {
+        expect(x).toBe(2)
+      })
+    })
+  })
   // describe('Promise@race', () => {
   //
   // })
