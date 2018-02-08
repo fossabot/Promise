@@ -10,7 +10,8 @@
       "single",
       "jsx-double"
     ],
-    "semicolon": false
+    "semicolon": false,
+    "trailing-comma": false
   },
   "rulesDirectory": []
 }
